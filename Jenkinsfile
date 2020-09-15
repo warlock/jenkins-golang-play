@@ -2,13 +2,13 @@
 
 podTemplate(containers: [
   containerTemplate(name: 'golang', image: 'golang:1.8.0', ttyEnabled: true, command: 'cat')
-  containerTemplate(name: 'docker', image: 'golang:latest')
+  containerTemplate(name: 'docker', image: 'golang:latest', , ttyEnabled: true, command: 'cat')
 ]) {
 
   node(POD_LABEL) {
   
     stage('Get a Golang project') {
-      git url: 'https://gitlab.git.girona.dev/josep/jenkins-golang-play.git'
+      git url: 'https://github.com/warlock/jenkins-golang-play.git'
      
       container('golang') {
         /*
@@ -26,24 +26,15 @@ podTemplate(containers: [
       }
 
       container('docker') {
-
-        stage('Docker build') {         
-          environment {
-            DOCKER_CREDENTIALS = credentials('docker registry')
-          }
-
-          def app
-
-          stage('Build image') {                            
-            app = docker.build("${env.DOCKER_CREDENTIALS_USR}/jenkins-golang-play")
-          }
-
-          stage('Push image') {  
-            docker.withRegistry('https://registry.hub.docker.com', 'docker registry') {                                
-              app.push("${env.BUILD_NUMBER}")                      
-              //app.push("latest")                     
-            }                 
-          }
+        withCredentials([[$class: 'UsernamePasswordMultiBinding',
+          credentialsId: 'dockerhub',
+          usernameVariable: 'DOCKER_HUB_USER',
+          passwordVariable: 'DOCKER_HUB_PASSWORD']]) {
+          sh """
+            docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASSWORD}
+            docker build -t js21/jenkins-golang-play:${gitCommit} .
+            docker push js21/jenkins-golang-play:${gitCommit}
+            """
         }
       }
     }
