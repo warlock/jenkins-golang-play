@@ -1,3 +1,3 @@
-module gitlab.git.girona.dev/josep/jenkins-golang-play
+module github.com/warlock/jenkins-golang-play
 
 go 1.15
