@@ -1,9 +1,9 @@
 #!/usr/bin/env groovy
 
 podTemplate(containers: [
-  containerTemplate(name: 'golang', image: 'golang:1.8.0', ttyEnabled: true, command: 'cat')
-  containerTemplate(name: 'docker', image: 'golang:latest', , ttyEnabled: true, command: 'cat')
-]) {
+  containerTemplate(name: 'golang', image: 'golang', ttyEnabled: true, command: 'cat'),
+  containerTemplate(name: 'docker', image: 'docker', ttyEnabled: true, command: 'cat')
+  ]) {
 
   node(POD_LABEL) {
   
@@ -11,16 +11,21 @@ podTemplate(containers: [
       git url: 'https://github.com/warlock/jenkins-golang-play.git'
      
       container('golang') {
-        /*
         stage('Build a Go project') {
-          sh 'go build'
+          sh """
+          mkdir -p /go/src/github.com/warlock
+          ln -s `pwd` /go/src/github.com/warlock/jenkins-golang-play
+          cd /go/src/github.com/warlock/jenkins-golang-play
+          go build
+          """
         }
-        */
 
         stage('Test Go project') {
           sh """
-            cd jenkins-golang-play
-            go test ./... -v -short
+          mkdir -p /go/src/github.com/warlock
+          ln -s `pwd` /go/src/github.com/warlock/jenkins-golang-play
+          cd /go/src/github.com/warlock/jenkins-golang-play
+          go test ./... -v -short
           """
         }
       }

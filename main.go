@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"gitlab.git.girona.dev/josep/jenkins-golang-play/handlers"
+	"github.com/warlock/jenkins-golang-play/handlers"
 )
 
 func main() {
