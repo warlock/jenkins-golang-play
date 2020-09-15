@@ -2,7 +2,10 @@
 
 podTemplate(containers: [
   containerTemplate(name: 'golang', image: 'golang', ttyEnabled: true, command: 'cat'),
-  containerTemplate(name: 'docker', image: 'docker', ttyEnabled: true, command: 'cat')
+  containerTemplate(name: 'docker', image: 'docker:stable-dind', ttyEnabled: true, command: 'cat', privileged: true)
+  ],
+  volumes: [
+    hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
   ]) {
 
   node(POD_LABEL) {
@@ -32,13 +35,13 @@ podTemplate(containers: [
 
       container('docker') {
         withCredentials([[$class: 'UsernamePasswordMultiBinding',
-          credentialsId: 'dockerhub',
+          credentialsId: 'docker registry',
           usernameVariable: 'DOCKER_HUB_USER',
           passwordVariable: 'DOCKER_HUB_PASSWORD']]) {
           sh """
             docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASSWORD}
-            docker build -t js21/jenkins-golang-play:${gitCommit} .
-            docker push js21/jenkins-golang-play:${gitCommit}
+            docker build -t js21/jenkins-golang-play:${BUILD_NUMBER} .
+            docker push js21/jenkins-golang-play:${BUILD_NUMBER}
             """
         }
       }
