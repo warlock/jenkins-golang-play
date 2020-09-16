@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jenkins-golang-play-ns
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-svc
+  namespace: jenkins-golang-play-ns
+spec:
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  selector:
+    app: jenkins-golang-play
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins-golang-play-dp
+  namespace: jenkins-golang-play-ns
+  labels:
+    app: jenkins-golang-play
+spec:
+  revisionHistoryLimit: 5
+  replicas: 2
+  selector:
+    matchLabels:
+      app: jenkins-golang-play
+  template:
+    metadata:
+      name: jenkins-golang-play-pd
+      labels:
+        app: jenkins-golang-play
+    spec:
+      containers:
+        - name: go-http-serv
+          image: registry.git.girona.dev/josep/jenkins-golang-play:<VERSION>
+          resources:
+            limits:
+              memory: '500Mi'
+          ports:
+            - containerPort: 8080
